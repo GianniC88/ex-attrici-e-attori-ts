@@ -99,6 +99,7 @@ function isActress(dati: unknown): dati is Actress {
 async function getActress(id: number): Promise<Actress | null> {
   try {
     const response = await fetch(`http://localhost:3333/users/${id}`);
+
     const dati: unknown = await response.json();
     if (!isActress(dati)) {
       throw new Error("formato dati sconosciuto");
@@ -121,8 +122,33 @@ async function getActress(id: number): Promise<Actress | null> {
 // La funzione deve restituire un array di oggetti Actress.
 
 // Può essere anche un array vuoto.
+async function getAllActresses(): Promise<Actress[]> {
+  try {
+    const response = await fetch(`http://localhost:3333/actresses`);
+
+    if (!response.ok) {
+      throw new Error(`Errore HTTP ${response.status}: ${response.statusText}`);
+    }
+    const dati: unknown = await response.json();
+    if (!(dati instanceof Array)) {
+      throw new Error(
+        "Formato dei dati non valido: formato sconosciuto (non è un array)"
+      );
+    }
+    const attriciTovate: Actress[] = dati.filter((a) => isActress(a));
+    return attriciTovate;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Errore durante il recupero dei dati:", error);
+    } else {
+      console.error("errore sconosciuto:", error);
+    }
+    return [];
+  }
+}
 
 // 📌 Milestone 5
+
 // Crea una funzione getActresses che riceve un array di numeri (gli id delle attrici).
 
 // Per ogni id nell’array, usa la funzione getActress che hai creato nella Milestone 3 per recuperare l’attrice corrispondente.
