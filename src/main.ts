@@ -76,10 +76,7 @@ function isActress(dati: unknown): dati is Actress {
     typeof dati.name === "string" &&
     "birth_year" in dati &&
     typeof dati.birth_year === "number" &&
-    "death_year" in dati &&
-    typeof dati.death_year === "number" &&
-    "biography" in dati &&
-    typeof dati.biography === "number" &&
+    (!("death_year" in dati) || typeof dati.death_year === "number") &&
     "biography" in dati &&
     typeof dati.biography === "string" &&
     "image" in dati &&
@@ -98,7 +95,7 @@ function isActress(dati: unknown): dati is Actress {
 
 async function getActress(id: number): Promise<Actress | null> {
   try {
-    const response = await fetch(`http://localhost:3333/users/${id}`);
+    const response = await fetch(`http://localhost:3333/actresses/${id}`);
 
     const dati: unknown = await response.json();
     if (!isActress(dati)) {
@@ -135,7 +132,7 @@ async function getAllActresses(): Promise<Actress[]> {
         "Formato dei dati non valido: formato sconosciuto (non è un array)"
       );
     }
-    const attriciTovate: Actress[] = dati.filter((a) => isActress(a));
+    const attriciTovate = dati.filter((a) => isActress(a));
     return attriciTovate;
   } catch (error) {
     if (error instanceof Error) {
@@ -156,3 +153,21 @@ async function getAllActresses(): Promise<Actress[]> {
 // L'obiettivo è ottenere una lista di risultati in parallelo, quindi dovrai usare Promise.all.
 
 // La funzione deve restituire un array contenente elementi di tipo Actress oppure null (se l’attrice non è stata trovata).
+
+async function getActresses(ids: number[]): Promise<(Actress | null)[]> {
+  try {
+    const promises = ids.map((id) => getActress(id));
+    const actresses = await Promise.all(promises);
+    return actresses;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Errore durante il recupero dei dati:", error);
+    } else {
+      console.error("errore sconosciuto:", error);
+    }
+    return [];
+  }
+}
+getActresses([5, 2, 15]).then((attrici) => {
+  console.log(attrici);
+});
